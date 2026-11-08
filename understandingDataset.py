@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import Pandas as pd
+import pandas as pd
 
 def readDataAndLoad():
     Base = Path(__file__).parent
