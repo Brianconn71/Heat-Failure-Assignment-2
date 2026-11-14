@@ -18,30 +18,14 @@ def loadData():
 
 # Check the data shape - columns and amount of row values before we do any validating
 def checkDataShapeBeforeValidating(df):
-    print(df.shape)
+    print(f"Shape of data before removing unused columns {df.shape}")
 
 def removeunUsedColumns(df):
-    columns = df.columns
-    print(columns.shape)
-    df = df.drop
-    return
-
-# function to handle missing values in the data
-def handle_missing_values(df):
-    # use the input argument dataframe - df
-    # and check the rows which have empty values
-    missing = df[df.isnull().any(axis=1)]
-    # The below used for testing purposes to find and compare shape of dataframe before we remove values.
-    # shape = df.shape
-    # print(shape)
-    # if the length of the dataframe with missing values is grerater than 0 indicating there are missing values
-    if len(missing) > 0:
-        # then drop these values from the dataframe
-        # also, reset index as dropping values from the file will cause gaps in the index of the file contents
-        # without it then pandas would add a new column index which I don't need.
-        df = df.dropna().reset_index(drop=True)
-    # return a clean dataframe
+    # removing the patient id and time column as they have no bearing on outcome and will not be used for training the ML algorithm
+    df = df.drop(columns=["patient_id", "time"])
+    print(f"Shape of data after removing unused columns {df.shape}")
     return df
+
 
 def checkForNoEmptyValues(df):
     # empty values is assigned to the sum of all columns that have a missing values totaled together
@@ -81,6 +65,12 @@ def checkDataTypes(df):
     else:
         print("No Non-Numeric columns detected in the dataset")
 
+
+def handle_missing_values(df):
+    # We cannot delete columns with missing values from the data set
+    # There are currently 319 empty values in the dataset if we removed all that data from the csv we would be losing over half our data so we need another way to deal with missing values so we are going to impute rather than delete
+    return
+
 # Check the data shape - columns and amount of row values after validation
 def checkDataShapeAfterValidating(df):
     print(df.shape)
@@ -96,10 +86,10 @@ def returnCleanData():
     # Check dhape of data loaded from file
     checkDataShapeBeforeValidating(df)
 
-    removeunUsedColumns(df)
+    df = removeunUsedColumns(df)
 
     # CLean the Dataframe we have loaded above to remove missing vales
-    df = handle_missing_values(df)
+    #df = handle_missing_values(df)
 
     # Now, check the Dataframe and ensure we are getting valid data such as,
     # The data has no more empty values, It has no duplicate values and the datatypes are consistent
