@@ -106,15 +106,21 @@ def handle_missing_values(df, binaryVlues, continuousValues):
             value = df_copy[column].median()
             df_copy[column] = df_copy[column].fillna(value)
             print(f"Continuous column {column} filled with {value:.1f}")
-        elif: column in binaryVlues:
-
-
+        elif column in binaryVlues:
+            value = df_copy[column].mode()[0]
+            df_copy[column] = df_copy[column].fillna(value)
+            print(f"Binary column {column} filled with {value:.1f}")
+    checkForNoEmptyValues(df_copy)
     
-    return df
+    return df_copy
 
-# Check the data shape - columns and amount of row values after validation
-def checkDataShapeAfterValidating(df):
-    print(df.shape)
+def saveProcessedDfasCsv(df):
+    output = Path(__file__).parent / "data" / "processed_Heart_rate_Failure.csv"
+
+    df.to_csv(output, index=False)
+
+    print(f"Processed data file saved to {output}")
+
 
 def returnCleanData():
     # This function acts as the conductor of the file, I will run this function from __main__ block
@@ -133,7 +139,9 @@ def returnCleanData():
     checkNoNegatives(df)
 
     # CLean the Dataframe we have loaded above to remove missing vales
-    df = handle_missing_values(df, binary, continuous)
+    df_copy = handle_missing_values(df, binary, continuous)
+
+    saveProcessedDfasCsv(df_copy)
 
     # Now, check the Dataframe and ensure we are getting valid data such as,
     # The data has no more empty values, It has no duplicate values and the datatypes are consistent
@@ -141,11 +149,8 @@ def returnCleanData():
     checkNoDuplicates(df)
     checkDataTypes(df)
 
-    # Check Data Shape after validating the data
-    checkDataShapeAfterValidating(df)
-
     # Now we can return the cleaned data
-    return df
+    return df_copy
 
 
 
