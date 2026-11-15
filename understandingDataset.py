@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def readDataAndLoad():
     Base = Path(__file__).parent
@@ -49,12 +50,23 @@ def checkIfDiscreteOrContinuousData(df):
 def summaryStatistics(df, discreet, continuous):
     print(f"----------Describing values in the continuous column---------\n")
     print(df[continuous].describe())
-    print(f"----------Describing values in the continuous column---------\n")
-    print(df[discreet].mean()*100)
-    print(f"----------Describing values in the continuous column---------\n")
+    print(f"----------% of patients that have binary value of 1(True)---------\n")
+    print(round(df[discreet].mean()*100, 1))
+    print(f"----------How many values are missing from each column---------\n")
     print(df.isna().sum())
-    print(f"----------Describing values in the continuous column---------\n")
+    print(f"----------Amount of patients with no missing values---------\n")
     print(len(df.dropna()))
+
+def dfCorrelation(df):
+    print(f"\n----------Correlation---------\n")
+    print(df.corr())
+    return
+
+def dfHistogram(df, continuous):
+    df[continuous].hist(bins=30, figsize=(12, 8))
+    plt.tight_layout()
+    plt.savefig(Path(__file__).parent / "figures" / "continuous_histogram.png", dpi=200)
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -63,3 +75,5 @@ if __name__ == "__main__":
     checkDataTypes(df)
     discreet, continuous = checkIfDiscreteOrContinuousData(df)
     summaryStatistics(df, discreet, continuous)
+    dfCorrelation(df)
+    dfHistogram(df, continuous)
