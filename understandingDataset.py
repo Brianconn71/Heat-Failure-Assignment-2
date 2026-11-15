@@ -3,6 +3,9 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
+pd.set_option("display.width", 200)
+pd.set_option("display.max_columns", None)
+
 def readDataAndLoad():
     Base = Path(__file__).parent
     Data = Base / "data" / "Heart_failure_data.csv"
@@ -49,18 +52,13 @@ def checkIfDiscreteOrContinuousData(df):
 
 def summaryStatistics(df, discreet, continuous):
     print(f"----------Describing values in the continuous column---------\n")
-    print(df[continuous].describe())
+    print(round(df[continuous].describe(), 2))
     print(f"----------% of patients that have binary value of 1(True)---------\n")
     print(round(df[discreet].mean()*100, 1))
     print(f"----------How many values are missing from each column---------\n")
     print(df.isna().sum())
     print(f"----------Amount of patients with no missing values---------\n")
     print(len(df.dropna()))
-
-def dfCorrelation(df):
-    print(f"\n----------Correlation---------\n")
-    print(df.corr())
-    return
 
 def dfHistogram(df, continuous):
     df[continuous].hist(bins=30, figsize=(12, 8))
@@ -72,8 +70,8 @@ def dfHistogram(df, continuous):
 if __name__ == "__main__":
     df = readDataAndLoad()
     countRowsAndColumns(df)
+    df = df.drop(columns=["patient_id","time"])
     checkDataTypes(df)
     discreet, continuous = checkIfDiscreteOrContinuousData(df)
     summaryStatistics(df, discreet, continuous)
-    dfCorrelation(df)
     dfHistogram(df, continuous)
