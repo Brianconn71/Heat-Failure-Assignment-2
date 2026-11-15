@@ -1,7 +1,8 @@
 """
 This file is used to pre process the csv file.
-This means that this file willload the csv file. It will Check for missing values and decide what to do with them and will add any features to be used.
-It will return a single clean processed DataFrame ready for use with the Machine Learning Algorithms.
+This means that this file willload the csv file. It will Check for missing values and decide what to do with them. It will also be used to validate the data from the csv, It will impute any cells which may be missing values in the columns of the csv file.
+It will transform the data and scale features which have been chosen to be scaled.
+It will return a single clean processed DataFrame ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
 """
 from pathlib import Path
 import pandas as pd
@@ -100,23 +101,26 @@ def checkNoNegatives(df):
 def handle_missing_values(df, binaryVlues, continuousValues):
     # We cannot delete columns with missing values from the data set
     # There are currently 319 empty values in the dataset if we removed all that data from the csv we would be losing over half our data so we need another way to deal with missing values so we are going to impute rather than delete
-    df_copy = df.copy()
-    for column in df_copy.columns:
+    dfCopy = df.copy()
+    for column in dfCopy.columns:
         if column in continuousValues:
-            value = df_copy[column].median()
-            df_copy[column] = df_copy[column].fillna(value)
+            value = dfCopy[column].median()
+            dfCopy[column] = dfCopy[column].fillna(value)
             print(f"Continuous column {column} filled with {value:.1f}")
         elif column in binaryVlues:
-            value = df_copy[column].mode()[0]
-            df_copy[column] = df_copy[column].fillna(value)
+            value = dfCopy[column].mode()[0]
+            dfCopy[column] = dfCopy[column].fillna(value)
             print(f"Binary column {column} filled with {value:.1f}")
-    checkForNoEmptyValues(df_copy)
+    checkForNoEmptyValues(dfCopy)
     
-    return df_copy
+    return dfCopy
 
 def saveProcessedDfasCsv(df):
-    output = Path(__file__).parent / "data" / "processed_Heart_rate_Failure.csv"
+    # setting output path for nely processed df which I will create a csv from for comparison
+    output = Path(__file__).parent / "data" / "processed_Heart_Failure.csv"
 
+    # Changing the dataframe to a csv and using index=false as without it then pandas will write an unnamed first column to the csv
+    # will lways contain newest data as it runs and overwrites file on each run
     df.to_csv(output, index=False)
 
     print(f"Processed data file saved to {output}")
@@ -132,6 +136,7 @@ def returnCleanData():
 
     # Check dhape of data loaded from file
     checkDataShapeBeforeValidating(df)
+    checkForNoEmptyValues(df)
 
     df = removeunUsedColumns(df)
 
