@@ -5,6 +5,8 @@ It will transform the data and scale features which have been chosen to be scale
 It will return a single clean processed DataFrame ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
 """
 from pathlib import Path
+from sklearn.preprocessing import StandardScaler
+
 import pandas as pd
 import numpy as np
 
@@ -134,6 +136,17 @@ def checkColumnSkewContinuous(df, continuous):
     })
     print(skewTable)
 
+def checkZScore(df, continuous):
+    z = (df[continuous] - df[continuous].mean()) / df[continuous].std()
+    print(z.abs().max())
+
+def scalingData(df, continuous):
+    scaledDf = df.copy()
+    scaledDf[continuous] = StandardScaler().fit_transform(df[continuous])
+    print(scaledDf)
+    print(scaledDf[continuous].mean().round(2))
+    print(scaledDf[continuous].std().round(2))
+
 
 def returnCleanData():
     # This function acts as the conductor of the file, I will run this function from __main__ block
@@ -167,7 +180,17 @@ def returnCleanData():
     # once dealt with missing values output the new df as a csv
     saveProcessedDfasCsv(df)
 
+    print("-------------------------------\n")
+    print("Skewness of continuous columns")
     checkColumnSkewContinuous(df, continuous)
+
+    print("-------------------------------\n")
+    print("Z-Score of continuous columns")
+    checkZScore(df, continuous)
+
+    print("-------------------------------\n")
+    print("Scaling the data")
+    scalingData(df, continuous)
 
     
 
