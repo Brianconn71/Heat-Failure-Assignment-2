@@ -26,7 +26,6 @@ def removeunUsedColumns(df):
     print(f"Shape of data after removing unused columns {df.shape}")
     return df
 
-
 def checkForNoEmptyValues(df):
     # empty values is assigned to the sum of all columns that have a missing values totaled together
     # hence the .sum().sum() sum per column and then sum per dataframe
@@ -66,6 +65,37 @@ def checkDataTypes(df):
         print("No Non-Numeric columns detected in the dataset")
 
 
+def checkRangeOfValues(df):
+    # below checks the columns in the dataframe, loops through values and if all values are 1 or 0 
+    # then its is binary and we append to binary columnlist otherwise its not binary so we append to continuous
+    binaryColumns = []
+    continuousColumn = []
+    for column in df.columns:
+        binaryValue = True
+        for idx, value in df[column].items():
+            # ignore missing values
+            if pd.isna(value):
+                continue
+            if value != 0.0 and value != 1.0:
+                binaryValue = False
+                break
+        # decide if binary or not once per column rather than once per iteration
+        if binaryValue:
+            binaryColumns.append(column)
+        else:
+            continuousColumn.append(column)
+
+    # Check that theres no negative values as this would not be possible given dataset
+    negativeValues = (df < 0).sum().sum()
+    if negativeValues:
+        print(f"{negativeValues} have been found")
+    else:
+        print(f"No Negative Values found!")
+
+    print(f"Binary columns: {binaryColumns}")
+    print(f"continuous columns: {continuousColumn}")
+
+    return df
 def handle_missing_values(df):
     # We cannot delete columns with missing values from the data set
     # There are currently 319 empty values in the dataset if we removed all that data from the csv we would be losing over half our data so we need another way to deal with missing values so we are going to impute rather than delete
@@ -87,6 +117,8 @@ def returnCleanData():
     checkDataShapeBeforeValidating(df)
 
     df = removeunUsedColumns(df)
+
+    checkRangeOfValues(df)
 
     # CLean the Dataframe we have loaded above to remove missing vales
     #df = handle_missing_values(df)
