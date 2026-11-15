@@ -6,6 +6,9 @@ It will return a single clean processed DataFrame ready for use with the Machine
 """
 from pathlib import Path
 import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
 
 # Build the path to the datafile
 Data = Path(__file__).parent / "data" / "Heart_failure_data.csv"
@@ -66,7 +69,7 @@ def checkDataTypes(df):
         print("No Non-Numeric columns detected in the dataset")
 
 
-def checkRangeOfValues(df):
+def identifyRangeOfValues(df):
     # below checks the columns in the dataframe, loops through values and if all values are 1 or 0 
     # then its is binary and we append to binary columnlist otherwise its not binary so we append to continuous
     binaryColumns = []
@@ -112,7 +115,6 @@ def handle_missing_values(df, binaryVlues, continuousValues):
             dfCopy[column] = dfCopy[column].fillna(value)
             print(f"Binary column {column} filled with {value:.1f}")
     checkForNoEmptyValues(dfCopy)
-    
     return dfCopy
 
 def saveProcessedDfasCsv(df):
@@ -120,10 +122,17 @@ def saveProcessedDfasCsv(df):
     output = Path(__file__).parent / "data" / "processed_Heart_Failure.csv"
 
     # Changing the dataframe to a csv and using index=false as without it then pandas will write an unnamed first column to the csv
-    # will lways contain newest data as it runs and overwrites file on each run
+    # will always contain newest data as it runs and overwrites file on each run
     df.to_csv(output, index=False)
 
     print(f"Processed data file saved to {output}")
+
+def checkColumnSkewContinuous(df, continuous):
+    skewTable = pd.DataFrame({
+        "Skew Before": df[continuous].skew(),
+        "Skew After": np.log1p(df[continuous]).skew()
+    })
+    print(skewTable)
 
 
 def returnCleanData():
@@ -134,28 +143,36 @@ def returnCleanData():
     # Load the data from the file
     df = loadData()
 
-    # Check dhape of data loaded from file
+    # Check shape of data loaded from file
     checkDataShapeBeforeValidating(df)
     checkForNoEmptyValues(df)
 
+    # removing unused columns patientid and time
     df = removeunUsedColumns(df)
-
-    binary, continuous = checkRangeOfValues(df)
-    checkNoNegatives(df)
-
-    # CLean the Dataframe we have loaded above to remove missing vales
-    df_copy = handle_missing_values(df, binary, continuous)
-
-    saveProcessedDfasCsv(df_copy)
 
     # Now, check the Dataframe and ensure we are getting valid data such as,
     # The data has no more empty values, It has no duplicate values and the datatypes are consistent
-    checkForNoEmptyValues(df)
     checkNoDuplicates(df)
     checkDataTypes(df)
 
+    # identifying the values in the columns and creating lists of binay and continuous columns
+    binary, continuous = identifyRangeOfValues(df)
+
+    # check df for if there are negative values
+    checkNoNegatives(df)
+
+    # CLean the Dataframe we have loaded above to remove missing vales
+    df = handle_missing_values(df, binary, continuous)
+
+    # once dealt with missing values output the new df as a csv
+    saveProcessedDfasCsv(df)
+
+    checkColumnSkewContinuous(df, continuous)
+
+    
+
     # Now we can return the cleaned data
-    return df_copy
+    return df
 
 
 
