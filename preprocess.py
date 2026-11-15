@@ -2,7 +2,7 @@
 This file is used to pre process the csv file.
 This means that this file willload the csv file. It will Check for missing values and decide what to do with them. It will also be used to validate the data from the csv, It will impute any cells which may be missing values in the columns of the csv file.
 It will transform the data and scale features which have been chosen to be scaled.
-It will return a single clean processed DataFrame ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
+It will return two DataFrames, one scaled and one unscaled ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
 """
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
 
-import matplotlib.pyplot as plt
 
 # Build the path to the datafile
 Data = Path(__file__).parent / "data" / "Heart_failure_data.csv"
@@ -47,7 +46,6 @@ def checkNoDuplicates(df):
     # Check the dataset to ensure that no two rows of values are exactly the same
     # follows similar logic as checkForNoEmptyValues
     duplicates = df.duplicated().sum().sum()
-    # Given the Time (Sec) column it would be very difficult for their to be any duplicates and I dont want to remove this column
     # This is just to confirm there are no two rows the exact same.
     if duplicates:
         print(f"Warning: {duplicates} duplicate values found in the dataset")
@@ -104,7 +102,7 @@ def checkNoNegatives(df):
         print(f"No Negative Values found!")
 
 def handle_missing_values(df, binaryVlues, continuousValues):
-    # We cannot delete columns with missing values from the data set
+    # We cannot delete rows with missing values from the data set
     # There are currently 319 empty values in the dataset if we removed all that data from the csv we would be losing over half our data so we need another way to deal with missing values so we are going to impute rather than delete
     dfCopy = df.copy()
     for column in dfCopy.columns:
@@ -130,22 +128,52 @@ def saveProcessedDfasCsv(df):
     print(f"Processed data file saved to {output}")
 
 def checkColumnSkewContinuous(df, continuous):
+    # using this function to check for skew of the continuous columns
+    # 0 means symmetric, above 1 or below -1 means data is skewed
+    # I am using a dataframe to show values before and after log transform to check which if any columns require it.
     skewTable = pd.DataFrame({
         "Skew Before": df[continuous].skew(),
-        "Skew After": np.log1p(df[continuous]).skew()
+        "Skew After": np.log(df[continuous]).skew()
     })
     print(skewTable)
 
 def checkZScore(df, continuous):
+    # checking z score to find any massive outliers from the continuous columns mean value
+    # using max() as it will show how extreme the most unuaually observed patient was.
     z = (df[continuous] - df[continuous].mean()) / df[continuous].std()
     print(z.abs().max())
 
 def scalingData(df, continuous):
+    # Some of the features of the dataframe are quite different in terms of values
+    # StandaardScaler converts each of the columns to mean of 0 and standard deviation of 1
+    # as a result, every feature will play a role in influencing the clusters rather than certain columns taking unnecessary precedence.
+    # Only the continuous columns are scaled as binary values as 0 or 1 which is already a meaningful scale and easily interpreted.
+    # we keep the original Dataframe for interpreting the clusters later in the process.
     scaledDf = df.copy()
     scaledDf[continuous] = StandardScaler().fit_transform(df[continuous])
+    print("-------------------------------\n")
+    print("Scaled Data")
     print(scaledDf)
+    print("-------------------------------\n")
+    print("Mean of Scaled Data")
     print(scaledDf[continuous].mean().round(2))
+    print("-------------------------------\n")
+    print("Standard Deviation of Scaled Data")
     print(scaledDf[continuous].std().round(2))
+    return scaledDf
+
+
+def applyLog(df):
+    # we are going to apply the log and transform only two columns from the continuous data list
+    # "creatinine_phosphokinase" & "serum_creatinine" both showed considerable improvment after running the checkColumnSkewContinuous function
+    # they were originally 4.9 and 5.2 before transforming and became 0.48 and 1.78 after transforming
+    # wheeas the rest of the continuous columns showed minimal improvement during the transformation process and some such as platelets got much worse going from 1.7 to -1.3
+    dfCopy = df.copy()
+
+    for col in ["creatinine_phosphokinase", "serum_creatinine"]:
+        dfCopy[col] = np.log(dfCopy[col])
+    return dfCopy
+
 
 
 def returnCleanData():
@@ -180,25 +208,32 @@ def returnCleanData():
     # once dealt with missing values output the new df as a csv
     saveProcessedDfasCsv(df)
 
+    # storing a copy of unscaled dataframe for future use
+    unscaledDf = df.copy()
+
     print("-------------------------------\n")
     print("Skewness of continuous columns")
     checkColumnSkewContinuous(df, continuous)
 
     print("-------------------------------\n")
-    print("Z-Score of continuous columns")
+    print("Z-Score of continuous columns before transforming")
     checkZScore(df, continuous)
+
+    # apply the log transform onto the columns which require it
+    logDf = applyLog(df)
+    print("-------------------------------\n")
+    print("Z-Score of continuous columns AFTER transforming")
+    checkZScore(logDf, continuous)
 
     print("-------------------------------\n")
     print("Scaling the data")
-    scalingData(df, continuous)
+    scaledDf = scalingData(logDf, continuous)
 
-    
-
-    # Now we can return the cleaned data
-    return df
+    # Now we can return the scaled data and unscaled data
+    return unscaledDf, scaledDf
 
 
 
 
 if __name__ == "__main__":
-    returnCleanData()
+    unscaledDf, scaledDf = returnCleanData()
