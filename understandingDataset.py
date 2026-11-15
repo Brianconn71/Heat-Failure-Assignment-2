@@ -38,9 +38,28 @@ def checkIfDiscreteOrContinuousData(df):
         # count the unique values from 
         unique = df[col].nunique()
         if unique == 2:
+            discreet.append(col)
+        else:
+            continuous.append(col)
+
+    print(discreet)
+    print(continuous)
+    return discreet , continuous
+
+def summaryStatistics(df, discreet, continuous):
+    print(f"----------Describing values in the continuous column---------\n")
+    print(df[continuous].describe())
+    print(f"----------Describing values in the continuous column---------\n")
+    print(df[discreet].mean()*100)
+    print(f"----------Describing values in the continuous column---------\n")
+    print(df.isna().sum())
+    print(f"----------Describing values in the continuous column---------\n")
+    print(len(df.dropna()))
 
 
 if __name__ == "__main__":
     df = readDataAndLoad()
     countRowsAndColumns(df)
     checkDataTypes(df)
+    discreet, continuous = checkIfDiscreteOrContinuousData(df)
+    summaryStatistics(df, discreet, continuous)
