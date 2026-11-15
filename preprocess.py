@@ -85,6 +85,11 @@ def checkRangeOfValues(df):
         else:
             continuousColumn.append(column)
 
+    print(f"Binary columns: {binaryColumns}")
+    print(f"continuous columns: {continuousColumn}")
+    return binaryColumns, continuousColumn
+
+def checkNoNegatives(df):
     # Check that theres no negative values as this would not be possible given dataset
     negativeValues = (df < 0).sum().sum()
     if negativeValues:
@@ -92,14 +97,20 @@ def checkRangeOfValues(df):
     else:
         print(f"No Negative Values found!")
 
-    print(f"Binary columns: {binaryColumns}")
-    print(f"continuous columns: {continuousColumn}")
-
-    return df
-def handle_missing_values(df):
+def handle_missing_values(df, binaryVlues, continuousValues):
     # We cannot delete columns with missing values from the data set
     # There are currently 319 empty values in the dataset if we removed all that data from the csv we would be losing over half our data so we need another way to deal with missing values so we are going to impute rather than delete
-    return
+    df_copy = df.copy()
+    for column in df_copy.columns:
+        if column in continuousValues:
+            value = df_copy[column].median()
+            df_copy[column] = df_copy[column].fillna(value)
+            print(f"Continuous column {column} filled with {value:.1f}")
+        elif: column in binaryVlues:
+
+
+    
+    return df
 
 # Check the data shape - columns and amount of row values after validation
 def checkDataShapeAfterValidating(df):
@@ -118,10 +129,11 @@ def returnCleanData():
 
     df = removeunUsedColumns(df)
 
-    checkRangeOfValues(df)
+    binary, continuous = checkRangeOfValues(df)
+    checkNoNegatives(df)
 
     # CLean the Dataframe we have loaded above to remove missing vales
-    #df = handle_missing_values(df)
+    df = handle_missing_values(df, binary, continuous)
 
     # Now, check the Dataframe and ensure we are getting valid data such as,
     # The data has no more empty values, It has no duplicate values and the datatypes are consistent
