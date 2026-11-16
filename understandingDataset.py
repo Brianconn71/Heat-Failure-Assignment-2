@@ -24,7 +24,7 @@ def countRowsAndColumns(df):
 
     # Header row
     headers = list(df.columns)
-    print(f"Column headers: {headers}")
+    print(f"Column names: {headers}")
 
 def checkDataTypes(df):
     numericOrNot = df.select_dtypes(exclude="number")
@@ -46,19 +46,19 @@ def checkIfDiscreteOrContinuousData(df):
         else:
             continuous.append(col)
 
-    print(discreet)
-    print(continuous)
+    print(f"Discreet / Binary Columns: {discreet}")
+    print(f"Continuous Columns: {continuous}")
     return discreet , continuous
 
 def summaryStatistics(df, discreet, continuous):
-    print(f"----------Describing values in the continuous column---------\n")
+    print(f"\n----------Describing values in the continuous column---------\n")
     print(round(df[continuous].describe(), 2))
-    print(f"----------% of patients that have binary value of 1(True)---------\n")
+    print(f"\n----------% of patients that have binary value of 1(True)---------\n")
     print(round(df[discreet].mean()*100, 1))
-    print(f"----------How many values are missing from each column---------\n")
+    print(f"\n----------How many values are missing from each column---------\n")
     print(df.isna().sum())
-    print(f"----------Amount of patients with no missing values---------\n")
-    print(len(df.dropna()))
+    print(f"\n----------Amount of patients with no missing values---------\n")
+    print(f"The Amount of patients with no missing values: {len(df.dropna())} when the total amount of participants in the study is: {len(df)}")
 
 def dfHistogram(df, continuous):
     df[continuous].hist(bins=30, figsize=(12, 8))
