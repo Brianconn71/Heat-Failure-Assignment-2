@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# setting display settings to ensure columns are not cut off when dispalyed
 pd.set_option("display.width", 200)
 pd.set_option("display.max_columns", None)
 

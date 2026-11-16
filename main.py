@@ -6,6 +6,11 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 import matplotlib.pyplot as plt
+import pandas as pd
+
+# setting display settings to ensure columns are not cut off when dispalyed
+pd.set_option("display.width", 200)
+pd.set_option("display.max_columns", None)
 
 figurePath = Path(__file__).parent / "figures"
 
@@ -67,8 +72,32 @@ def findBestKValue(scaledDf):
     # as we have shown above the best k value from both means of finding the best k is 2 so I will return bestSilhouetteK but it does not matter as both values are samne
     return bestSilhouetteK
 
-def KMeansClustering():
-    return
+def KMeansClustering(scaledDf, kValue):
+    # Creating the kmeans model with k input from the above findBestKValue function
+    # using same random_state and n_init as findBestKValue for consistency of results
+    kMeansModel = KMeans(n_clusters=kValue, random_state=42, n_init=25)
+
+    # fit_predict methos is used to run the kmeans algorithm and then returns a cluster label for each patient in the study
+    # fit_predict finds the cluster centres and uses this to predict a label for each patient in our dataset.
+    # the reurn is of type array
+    KMLabels = kMeansModel.fit_predict(scaledDf)
+
+    # using print statements to print to the terminal How many patients are in ach cluster
+    # using value_counts pandas method to count how many patients have each label
+    print("\n--------------K-Means Cluster Size-----------------\n")
+    print(pd.Series(KMLabels).value_counts().sort_index())
+
+    # using print statements to print to the terminal the scaled cluster centres and showing which feature separates the clusters
+    # cluster centres has the cordinates of each cluster centre point returned as an array
+    # continuous columns get scaled and they are displayed as standard deviations from the mean whereas
+    # binary columns are proportional and not scaled example being anemia which is 0.41 which means
+    # 41% of cluster 0 has anemia
+    print("\n--------------K-Means Cluster Centers Scaled-----------------\n")
+    centreValues = pd.DataFrame(kMeansModel.cluster_centers_, columns=scaledDf.columns)
+    print(centreValues.round(2))
+
+    # we then need to return the kmeans labels for evaluation later
+    return KMLabels
 
 def hierarchialClustering():
     return
@@ -90,4 +119,5 @@ if __name__ == "__main__":
     # call the return clean data function within preprocess each time this file is run so we know the data is accurate
     unscaledDf, scaledDf = returnCleanData()
     kValue = findBestKValue(scaledDf)
+    KMLabels = KMeansClustering(scaledDf, kValue)
     
