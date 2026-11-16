@@ -2,8 +2,9 @@ from preprocess import returnCleanData
 
 from pathlib import Path
 
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
+from scipy.cluster.hierarchy import linkage, dendogram
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -99,7 +100,8 @@ def KMeansClustering(scaledDf, kValue):
     # we then need to return the kmeans labels for evaluation later
     return KMLabels
 
-def hierarchialClustering():
+def hierarchialClustering(scaledDf, kValue):
+    # hierarchial is agglomerative which means bottoms up
     return
 
 def plotClusters():
@@ -120,4 +122,5 @@ if __name__ == "__main__":
     unscaledDf, scaledDf = returnCleanData()
     kValue = findBestKValue(scaledDf)
     KMLabels = KMeansClustering(scaledDf, kValue)
+    hierarchialClustering(scaledDf, kValue)
     
