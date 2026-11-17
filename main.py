@@ -147,9 +147,24 @@ def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
     pcaFitted = pca.fit_transform(scaledDf)
 
     variance = pca.explained_variance_ratio_
-    print("f"PCA: PC1 {variance[0]}"")
+    print(f"\nPCA: PC1 {variance[0]*100:.2f}%, PC2: {variance[1]*100:.2f}%, Total: {variance.sum()*100:.2f}%")
 
-    return
+    components = pd.DataFrame(pca.components_, columns=scaledDf.columns, index=["PC1", "PC2"])
+    print(components.T.round(2))
+
+    fig, axes = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True)
+
+    for axis, labels, title in zip(axes, [KMLabels, hierarchyLabels], ["K-Means Algorithm", "Hierarchial Algorithm (using ward linkage)"]):
+        scatter = axis.scatter(pcaFitted[:, 0], pcaFitted[:, 1], c=labels, cmap="Blues", s=20, alpha=0.8, edgecolor="white")
+        axis.set_title(f"{title} (k={kValue})")
+        axis.set_xlabel(f"PC1 {variance[0]*100:.2f}% of variance")
+        axis.set_ylabel(f"PC2 {variance[1]*100:.2f}% of variance")
+        axis.legend(*scatter.legend_elements(), title="Cluster")
+
+    plt.tight_layout()
+    plt.savefig(figurePath / "clusters.png", dpi=250)
+    plt.show()
+
 
 def evaluateClusters():
     return
@@ -167,4 +182,5 @@ if __name__ == "__main__":
     kValue = findBestKValue(scaledDf)
     KMLabels = KMeansClustering(scaledDf, kValue)
     hierarchyLabels = hierarchialClustering(scaledDf, kValue)
+    clusters = plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue)
     
