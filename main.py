@@ -3,7 +3,7 @@ from preprocess import returnCleanData
 from pathlib import Path
 
 from sklearn.cluster import KMeans, AgglomerativeClustering
-from sklearn.metrics import silhouette_score, davies_bouldin_score
+from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score
 from sklearn.decomposition import PCA
 from scipy.cluster.hierarchy import linkage, dendrogram
 
@@ -194,8 +194,17 @@ def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
     
     return resultsDf
 
-def compareClusters():
-    return
+def compareClusters(KMLabels, hierarchyLabels):
+    adjRand = adjusted_rand_score(KMLabels, hierarchyLabels)
+
+    crossTab = pd.crosstab(KMLabels, hierarchyLabels, rownames=["K-Means"], colnames=["Hierarchial"], margins=True)
+
+    sameLabel = (KMLabels == hierarchyLabels).mean()
+    inAgreement = max(sameLabel, 1 - sameLabel)
+
+    
+
+    return adjRand, crossTab
 
 def profileClusters():
     return
@@ -209,4 +218,5 @@ if __name__ == "__main__":
     hierarchyLabels = hierarchialClustering(scaledDf, kValue)
     plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue)
     results = evaluateClusters(scaledDf, KMLabels, hierarchyLabels)
+    adjRand, crossTab = compareClusters(KMLabels, hierarchyLabels)
     
