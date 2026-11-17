@@ -4,6 +4,7 @@ from pathlib import Path
 
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
 from scipy.cluster.hierarchy import linkage, dendrogram
 
 import matplotlib.pyplot as plt
@@ -141,7 +142,13 @@ def hierarchialClustering(scaledDf, kValue):
 
     return hierarchyLabels
 
-def plotClusters():
+def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
+    pca = PCA(n_components=2)
+    pcaFitted = pca.fit_transform(scaledDf)
+
+    variance = pca.explained_variance_ratio_
+    print("f"PCA: PC1 {variance[0]}"")
+
     return
 
 def evaluateClusters():
