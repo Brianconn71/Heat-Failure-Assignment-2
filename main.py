@@ -3,7 +3,7 @@ from preprocess import returnCleanData
 from pathlib import Path
 
 from sklearn.cluster import KMeans, AgglomerativeClustering
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, davies_bouldin_score
 from sklearn.decomposition import PCA
 from scipy.cluster.hierarchy import linkage, dendrogram
 
@@ -155,7 +155,7 @@ def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
     fig, axes = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True)
 
     for axis, labels, title in zip(axes, [KMLabels, hierarchyLabels], ["K-Means Algorithm", "Hierarchial Algorithm (using ward linkage)"]):
-        scatter = axis.scatter(pcaFitted[:, 0], pcaFitted[:, 1], c=labels, cmap="Blues", s=20, alpha=0.8, edgecolor="white")
+        scatter = axis.scatter(pcaFitted[:, 0], pcaFitted[:, 1], c=labels, cmap="coolwarm", s=20, alpha=0.8, edgecolor="white", linewidth=0.5)
         axis.set_title(f"{title} (k={kValue})")
         axis.set_xlabel(f"PC1 {variance[0]*100:.2f}% of variance")
         axis.set_ylabel(f"PC2 {variance[1]*100:.2f}% of variance")
@@ -165,9 +165,34 @@ def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
     plt.savefig(figurePath / "clusters.png", dpi=250)
     plt.show()
 
+def calculateTheWcss(scaledDf, labels):
+    total = 0
 
-def evaluateClusters():
-    return
+    for cluster in sorted(set(labels)):
+        points = scaledDf[labels == cluster]
+        centre = points.mean()
+        total += ((points - centre) ** 2).sum().sum()
+    
+    return total
+
+
+def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
+    results = []
+
+    for name, label in [("K-Means", KMLabels), ("Hierarchial (by ward linkage)", hierarchyLabels)]:
+        results.append({
+            "Algorithm": name,
+            "Silhouette": silhouette_score(scaledDf, label),
+            "Davies-Bouldin": davies_bouldin_score(scaledDf, label),
+            "WCSS": calculateTheWcss(scaledDf, label)
+        })
+
+    resultsDf = pd.DataFrame(results).set_index("Algorithm")
+
+    print("\n--------------Cluster Evaluation-----------------\n")
+    print(resultsDf.round(3))
+    
+    return resultsDf
 
 def compareClusters():
     return
@@ -182,5 +207,6 @@ if __name__ == "__main__":
     kValue = findBestKValue(scaledDf)
     KMLabels = KMeansClustering(scaledDf, kValue)
     hierarchyLabels = hierarchialClustering(scaledDf, kValue)
-    clusters = plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue)
+    plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue)
+    results = evaluateClusters(scaledDf, KMLabels, hierarchyLabels)
     
