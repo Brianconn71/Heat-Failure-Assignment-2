@@ -4,7 +4,7 @@ from pathlib import Path
 
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
-from scipy.cluster.hierarchy import linkage, dendogram
+from scipy.cluster.hierarchy import linkage, dendrogram
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -101,8 +101,45 @@ def KMeansClustering(scaledDf, kValue):
     return KMLabels
 
 def hierarchialClustering(scaledDf, kValue):
-    # hierarchial is agglomerative which means bottoms up
-    return
+    # hierarchial is agglomerative which means bottoms up and in this case each patient will start as his own cluster
+    # the two closest clusters are then merged until eventualy kValue clusters are all that are left.
+    # linkage is used to merge the pair that increases the within-cluster variance the least of alland is similar to what k-means minimizes , which means that 
+    # the two methods can be fairly compared. If the linkage is set as ward then only euclidean and l2 are accepted.
+    # unlike kmeans hierarchial clustering does not take random_state argument so hierarchial always returns the same results
+    hierarchyModel = AgglomerativeClustering(n_clusters=kValue, linkage="ward")
+
+    # fit_predict method is used to run the hierarchial algorithm and then returns a cluster label for each patient in the study
+    hierarchyLabels = hierarchyModel.fit_predict(scaledDf)
+
+    print("\n--------------Hierarchial Cluster Size-----------------\n")
+    print(pd.Series(hierarchyLabels).value_counts().sort_index())
+
+    # we need a way to visualize this and we start by getting the full merge history using the same mehod ("ward")
+    # as what was used on the model
+    merge = linkage(scaledDf, method="ward")
+
+    cuttingHeight = (merge[-kValue,2] + merge[-(kValue - 1), 2]) / 2
+
+    # we need the figure to be drawn before plotting the dendrogram
+    plt.figure(figsize=(12, 6))
+
+    # drawing and intitaiting the dendrogram method 
+    # we are using p=50 and truncate_mode=lastp which means to show the last 50 merges done on the dataframe
+    dendrogram(merge, truncate_mode="lastp", p=50, color_threshold=cuttingHeight)
+
+    
+    plt.title("Hierarchial Clustering Dendrogram using Ward Linkage")
+    plt.xlabel("Patients in the study (cluster size in brackets)")
+    plt.ylabel("Merge distance")
+    
+    plt.axhline(y=cuttingHeight, color="red", linestyle="--", label=f"cut at k={kValue}")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(figurePath / "dendrogram.png", dpi=250)
+    plt.show()
+
+    return hierarchyLabels
 
 def plotClusters():
     return
@@ -122,5 +159,5 @@ if __name__ == "__main__":
     unscaledDf, scaledDf = returnCleanData()
     kValue = findBestKValue(scaledDf)
     KMLabels = KMeansClustering(scaledDf, kValue)
-    hierarchialClustering(scaledDf, kValue)
+    hierarchyLabels = hierarchialClustering(scaledDf, kValue)
     
