@@ -195,10 +195,20 @@ def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
     return resultsDf
 
 def compareClusters(KMLabels, hierarchyLabels):
+    # Adj rand index is used to compare every pair of patients/participants and check if both algorithms put them together or pull apart
+    # 1 = both algorithms give the same cluster, 0 = chance but no better than that
+    # it ignores label numbers when comparing so if cluster 0 in one is 1 in the other
     adjRand = adjusted_rand_score(KMLabels, hierarchyLabels)
 
+    # crosstab - shows k-means clusters as rows and hierarchy clusters as columns
+    # diagonal is where both algorithms agree and off diagonal is where they disagree
+    # margins = True is used to add an All row and column that has totals
     crossTab = pd.crosstab(KMLabels, hierarchyLabels, rownames=["K-Means"], colnames=["Hierarchial"], margins=True)
+    print(crossTab)
 
+    # inAgreement is the percent of patients put in the same cluster by both algorithms
+    # cluster numbers can be random so we need to check swapped labels but keep higher value.
+    # this will only work while k is 2
     sameLabel = (KMLabels == hierarchyLabels).mean()
     inAgreement = max(sameLabel, 1 - sameLabel)
 
