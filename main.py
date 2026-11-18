@@ -166,13 +166,22 @@ def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
     plt.show()
 
 def calculateTheWcss(scaledDf, labels):
+    # k-means has WCSS via inertia_ mehod but hierarchial does not with agglomerative clustering
+    # wcss needs to be caalculated manually for this and used on both of the algorithms for fairness
+    # WCSS is the total squared distance each patient in the study is to the centrre of their cluster.
+
     total = 0
 
+    # sort and ensure only unique values in the labels list
     for cluster in sorted(set(labels)):
+        # labels equaling cluster gives a True or False value for each patient and keeps only these patients in thaat cluster.
         points = scaledDf[labels == cluster]
+        # centre of the cluster is the mean value for patients
         centre = points.mean()
+        # get the squared distance of every patient to the centre, first sum is for each column and second is for total of all columns together.
         total += ((points - centre) ** 2).sum().sum()
-    
+
+    # return the Wcss
     return total
 
 
