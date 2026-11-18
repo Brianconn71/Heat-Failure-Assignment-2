@@ -202,12 +202,37 @@ def compareClusters(KMLabels, hierarchyLabels):
     sameLabel = (KMLabels == hierarchyLabels).mean()
     inAgreement = max(sameLabel, 1 - sameLabel)
 
-    
+
+    print("\n--------------Comparing K-Means with Hierarchial-----------------\n")
+    print(f"Adjusted Rand Index: {adjRand:.3f}")
+    print(f"Patients in same cluster in both algorithms {inAgreement*100:.2f} %")
+    print(crossTab)
 
     return adjRand, crossTab
 
-def profileClusters():
-    return
+def profileClusters(unscaledDf, KMLabels, hierarchyLabels):
+    binaryCols = [col for col in unscaledDf.columns if unscaledDf[col].nunique() == 2]
+
+    profiles = {}
+
+    for name, label in [("K-Means", KMLabels), ("Hierarchy", hierarchyLabels)]:
+        unScale = unscaledDf.copy()
+        unScale["Cluster"] = label
+
+        profile = unScale.groupby("Cluster").mean().T
+
+        profile["All Patients"] = unscaledDf.mean()
+
+        profile.loc[binaryCols] = profile.loc[binaryCols] * 100
+
+        sizes = unScale["Cluster"].value_counts().sort_index()
+        profile.loc["Patients (n)"] = list(sizes) + [len(unScale)]
+
+        print(f"\n--------------{name} Cluster Profiles -----------------\n")
+        print(profile.round(2))
+
+        profiles[name] = profile
+    return profiles
 
 
 if __name__ == "__main__":
@@ -219,4 +244,5 @@ if __name__ == "__main__":
     plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue)
     results = evaluateClusters(scaledDf, KMLabels, hierarchyLabels)
     adjRand, crossTab = compareClusters(KMLabels, hierarchyLabels)
+    profiles = profileClusters(unscaledDf, KMLabels, hierarchyLabels)
     
