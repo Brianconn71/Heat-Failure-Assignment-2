@@ -55,6 +55,9 @@ def findBestKValue(scaledDf):
     # Plotting the scores to a side by side graph
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
+    # Plotting both figures on the plot
+    # first is getting best wcss k value and second is the best hierarhial k value
+    # plot these on the figure, save them and display to the user.
     ax1.plot(kValues, wcss, marker="x")
     ax1.set_xlabel("Number of k clusters")
     ax1.set_ylabel("WCSS")
@@ -128,39 +131,62 @@ def hierarchialClustering(scaledDf, kValue):
     # we are using p=50 and truncate_mode=lastp which means to show the last 50 merges done on the dataframe
     dendrogram(merge, truncate_mode="lastp", p=50, color_threshold=cuttingHeight)
 
-    
+
+    # Plotting the figure to use for hierarchial clustering 
+    # setting labels here too.
     plt.title("Hierarchial Clustering Dendrogram using Ward Linkage")
     plt.xlabel("Patients in the study (cluster size in brackets)")
     plt.ylabel("Merge distance")
-    
+
+    # using a horizontal axis line to show the ideal k value
     plt.axhline(y=cuttingHeight, color="red", linestyle="--", label=f"cut at k={kValue}")
     plt.legend()
 
+    #plot the figure and save as a png file
     plt.tight_layout()
     plt.savefig(figurePath / "dendrogram.png", dpi=250)
     plt.show()
 
+    # return the value to the customer
     return hierarchyLabels
 
 def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
+    # PCA (Principal Component Analysis) is used to find the 2 directions in which the customers vary the most.
+    # It then puts these patients onto them and enables us to check the clusters, PCA is primarily used to visualise the data
     pca = PCA(n_components=2)
+
+    # fit_transform gets the components and returns the PCA1 and PCA2 coordinates for each patient.
     pcaFitted = pca.fit_transform(scaledDf)
 
+    # explained_variance_ratio is used for the total variation in the data each component has.
+    # shows how much of the data the plot captures and how much is left out
     variance = pca.explained_variance_ratio_
     print(f"\nPCA: PC1 {variance[0]*100:.2f}%, PC2: {variance[1]*100:.2f}%, Total: {variance.sum()*100:.2f}%")
 
+    # components_ is used to show how much of each feature is used in both PC1 and 2
+    # explains what the axes is used for and then .T flips so features are rows and its easier to read.
     components = pd.DataFrame(pca.components_, columns=scaledDf.columns, index=["PC1", "PC2"])
     print(components.T.round(2))
 
+    # comparing plots side by side here as they are using same scale , it ensures each patient is in the same position in both plots and can be compared
     fig, axes = plt.subplots(1, 2, figsize=(12,6), sharex=True, sharey=True)
 
+    # using zip to loop through the plots simultaneously
     for axis, labels, title in zip(axes, [KMLabels, hierarchyLabels], ["K-Means Algorithm", "Hierarchial Algorithm (using ward linkage)"]):
+        # then plotting on separate scatter plots
+        # pcaFitted is used with slicing to ensure we are comparing patients correctly
+        # c=labels is used to colour each patient by cluster they were put in
+        # originally used Blues colour but didnt look right so swapped to coolwarmto make visible the difference
         scatter = axis.scatter(pcaFitted[:, 0], pcaFitted[:, 1], c=labels, cmap="coolwarm", s=20, alpha=0.8, edgecolor="white", linewidth=0.5)
+
+        # Setting the plot, figure, for both scatter plots below
         axis.set_title(f"{title} (k={kValue})")
         axis.set_xlabel(f"PC1 {variance[0]*100:.2f}% of variance")
         axis.set_ylabel(f"PC2 {variance[1]*100:.2f}% of variance")
+        # then basically create legend automatically based opn colours.
         axis.legend(*scatter.legend_elements(), title="Cluster")
 
+    # plot the plots and save to correct directory.
     plt.tight_layout()
     plt.savefig(figurePath / "clusters.png", dpi=250)
     plt.show()
@@ -186,9 +212,14 @@ def calculateTheWcss(scaledDf, labels):
 
 
 def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
+    # This function is used to evaluate both algorithms based on the same metrics and 
+    # all the clustering was done on the scaled dataframe not unscaled
     results = []
 
     for name, label in [("K-Means", KMLabels), ("Hierarchial (by ward linkage)", hierarchyLabels)]:
+        # Silhoutte ranges scores from -1 to 1 and higher is better. measures how close a patient is to their own cluster by comparison to the next nearest
+        # Davies-bouldin is better to be lower score and closer to 0. Its used to check how spread out each cluster is compared to how far apart it is to next closest.
+        # WCSS is better to be lowerand it can only be compared here due to both algorithms using same k value.
         results.append({
             "Algorithm": name,
             "Silhouette": silhouette_score(scaledDf, label),
@@ -196,11 +227,15 @@ def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
             "WCSS": calculateTheWcss(scaledDf, label)
         })
 
+    # Each loop means the dictionary is used to become a row in a dataframe and set_index takes the algorithm name as row label.
     resultsDf = pd.DataFrame(results).set_index("Algorithm")
 
+    # rounding to 3 to account for very low scores
+    # tried with 2 initially but doesnt give the full story.
     print("\n--------------Cluster Evaluation-----------------\n")
     print(resultsDf.round(3))
-    
+
+    # return the dataframe to user
     return resultsDf
 
 def compareClusters(KMLabels, hierarchyLabels):
@@ -222,6 +257,8 @@ def compareClusters(KMLabels, hierarchyLabels):
     inAgreement = max(sameLabel, 1 - sameLabel)
 
 
+    # printing all vaues to the terminal
+    # along with the crosstab results
     print("\n--------------Comparing K-Means with Hierarchial-----------------\n")
     print(f"Adjusted Rand Index: {adjRand:.3f}")
     print(f"Patients in same cluster in both algorithms {inAgreement*100:.2f} %")
@@ -230,23 +267,36 @@ def compareClusters(KMLabels, hierarchyLabels):
     return adjRand, crossTab
 
 def profileClusters(unscaledDf, KMLabels, hierarchyLabels):
+    # CLustering of the dataset was done on the scaled dataset,
+    # this needs to be added to the unscaled version because otherwrise dotors and clinicians will not knowwhat it all means
+    # for example we need to show age in years
+
+    # binary columns are wither 1 or 0 so the mean is the proportion of yes to nos with the patients that have the condition
     binaryCols = [col for col in unscaledDf.columns if unscaledDf[col].nunique() == 2]
 
+    # Initialize empty dictionary to store  the final clusters
     profiles = {}
 
     for name, label in [("K-Means", KMLabels), ("Hierarchy", hierarchyLabels)]:
+        # I want to leave the initial unscaled data dframe alone so adding columns to the copy
         unScale = unscaledDf.copy()
         unScale["Cluster"] = label
 
+        # groupby to split patients by their cluster and mean is the average patient within that cluster
+        # T flips table so features are rows and clusters the columns
         profile = unScale.groupby("Cluster").mean().T
 
+        # Need to get the average of all patients so each cluster can be compared
         profile["All Patients"] = unscaledDf.mean()
 
+        # Get % of the binary columns so multiply by 100
         profile.loc[binaryCols] = profile.loc[binaryCols] * 100
 
+        # Used to add the number of the patients in each cluster as a row
         sizes = unScale["Cluster"].value_counts().sort_index()
         profile.loc["Patients (n)"] = list(sizes) + [len(unScale)]
 
+        # Printing results to the terminal for analysis
         print(f"\n--------------{name} Cluster Profiles -----------------\n")
         print(profile.round(2))
 
@@ -255,7 +305,6 @@ def profileClusters(unscaledDf, KMLabels, hierarchyLabels):
 
 
 if __name__ == "__main__":
-    # call the return clean data function within preprocess each time this file is run so we know the data is accurate
     unscaledDf, scaledDf = returnCleanData()
     kValue = findBestKValue(scaledDf)
     KMLabels = KMeansClustering(scaledDf, kValue)
