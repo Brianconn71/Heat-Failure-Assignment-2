@@ -1,8 +1,14 @@
 """
-This file is used to pre process the csv file.
-This means that this file willload the csv file. It will Check for missing values and decide what to do with them. It will also be used to validate the data from the csv, It will impute any cells which may be missing values in the columns of the csv file.
-It will transform the data and scale features which have been chosen to be scaled.
-It will return two DataFrames, one scaled and one unscaled ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
+    I want to highlight the usage of Claude (Anthropic)in doing this assignment. It was usead primarily as a learning tool to support the development of this python script.
+    I used it to explain and sow examples of how particular methods of scikit learn could be used such as Ward linkage, K-Means, Hierarchial Clustering, Preprocessing decisions made and figuring out a way
+    to get the best K value. I used it to help debug my code when stuck, review if what I wrote made sense and again to provide examples of methods usage. I adapted what i learnt from this into my own code
+    to help with this assignment. I checked any references and websites with carious methods independently to ensure I understood what was happening. Examples of code were provided by claude which I adapted and made my own by
+    ensuring I fully understood everything. The final decisions made on analysis of dataset, code and final written report are my own choices and decisions to which I take full responsibility for accuracy of results and how the results have been perceived.
+
+    This file is used to pre process the csv file.
+    This means that this file willload the csv file. It will Check for missing values and decide what to do with them. It will also be used to validate the data from the csv, It will impute any cells which may be missing values in the columns of the csv file.
+    It will transform the data and scale features which have been chosen to be scaled.
+    It will return two DataFrames, one scaled and one unscaled ready for use with the Machine Learning Algorithms. Also, it will store the processed csv in a new csv file.
 """
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
