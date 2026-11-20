@@ -4,6 +4,9 @@
     to get the best K value. I used it to help debug my code when stuck, review if what I wrote made sense and again to provide examples of methods usage. I adapted what i learnt from this into my own code
     to help with this assignment. I checked any references and websites with carious methods independently to ensure I understood what was happening. Examples of code were provided by claude which I adapted and made my own by
     ensuring I fully understood everything. The final decisions made on analysis of dataset, code and final written report are my own choices and decisions to which I take full responsibility for accuracy of results and how the results have been perceived.
+
+    References found in README.md file
+
 """
 from preprocess import returnCleanData
 
@@ -12,7 +15,7 @@ from pathlib import Path
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score
 from sklearn.decomposition import PCA
-from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.cluster.hierarchy import linkage, dendrogram 
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -25,7 +28,7 @@ figurePath = Path(__file__).parent / "figures"
 
 def findBestKValue(scaledDf):
     # Need to find best k to use on the clustering algorithms
-    # I am going to compare the WCSS method and the silhouette method here
+    # I am going to compare the WCSS [9] method and the silhouette [12][13] method here
     # references added to report
 
     # silhouette requires a minimum of 2 clusters so range starts at 2
@@ -36,7 +39,7 @@ def findBestKValue(scaledDf):
 
     for k in kValues:
 
-        # random_state fixes the random starting centres so results are coonsistent
+        # random_state [10] fixes the random starting centres so results are coonsistent
         # n_init=25 means k-means runs 25 times with different starts but keeps best results
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=25)
         kmeans.fit(scaledDf)
@@ -85,7 +88,7 @@ def findBestKValue(scaledDf):
     return bestSilhouetteK
 
 def KMeansClustering(scaledDf, kValue):
-    # Creating the kmeans model with k input from the above findBestKValue function
+    # Creating the kmeans [14] model with k input from the above findBestKValue function
     # using same random_state and n_init as findBestKValue for consistency of results
     kMeansModel = KMeans(n_clusters=kValue, random_state=42, n_init=25)
 
@@ -112,9 +115,9 @@ def KMeansClustering(scaledDf, kValue):
     return KMLabels
 
 def hierarchialClustering(scaledDf, kValue):
-    # hierarchial is agglomerative which means bottoms up and in this case each patient will start as his own cluster
+    # hierarchial [11] is agglomerative which means bottoms up and in this case each patient will start as his own cluster
     # the two closest clusters are then merged until eventualy kValue clusters are all that are left.
-    # linkage is used to merge the pair that increases the within-cluster variance the least of alland is similar to what k-means minimizes , which means that 
+    # linkage [15] is used to merge the pair that increases the within-cluster variance the least of alland is similar to what k-means minimizes , which means that 
     # the two methods can be fairly compared. If the linkage is set as ward then only euclidean and l2 are accepted.
     # unlike kmeans hierarchial clustering does not take random_state argument so hierarchial always returns the same results
     hierarchyModel = AgglomerativeClustering(n_clusters=kValue, linkage="ward")
@@ -158,7 +161,7 @@ def hierarchialClustering(scaledDf, kValue):
     return hierarchyLabels
 
 def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
-    # PCA (Principal Component Analysis) is used to find the 2 directions in which the customers vary the most.
+    # PCA (Principal Component Analysis) [6] is used to find the 2 directions in which the customers vary the most.
     # It then puts these patients onto them and enables us to check the clusters, PCA is primarily used to visualise the data
     # further information on this method found here: https://www.geeksforgeeks.org/data-analysis/principal-component-analysis-pca/
     pca = PCA(n_components=2)
@@ -166,7 +169,7 @@ def plotClusters(scaledDf, KMLabels, hierarchyLabels, kValue):
     # fit_transform gets the components and returns the PCA1 and PCA2 coordinates for each patient.
     pcaFitted = pca.fit_transform(scaledDf)
 
-    # explained_variance_ratio is used for the total variation in the data each component has.
+    # explained_variance_ratio [3] is used for the total variation in the data each component has.
     # shows how much of the data the plot captures and how much is left out
     variance = pca.explained_variance_ratio_
     print(f"\nPCA: PC1 {variance[0]*100:.2f}%, PC2: {variance[1]*100:.2f}%, Total: {variance.sum()*100:.2f}%")
@@ -225,8 +228,8 @@ def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
     results = []
 
     for name, label in [("K-Means", KMLabels), ("Hierarchial (by ward linkage)", hierarchyLabels)]:
-        # Silhoutte ranges scores from -1 to 1 and higher is better. measures how close a patient is to their own cluster by comparison to the next nearest
-        # Davies-bouldin is better to be lower score and closer to 0. Its used to check how spread out each cluster is compared to how far apart it is to next closest.
+        # Silhoutte [12] ranges scores from -1 to 1 and higher is better. measures how close a patient is to their own cluster by comparison to the next nearest
+        # Davies-bouldin [8] is better to be lower score and closer to 0. Its used to check how spread out each cluster is compared to how far apart it is to next closest.
         # WCSS is better to be lowerand it can only be compared here due to both algorithms using same k value.
         results.append({
             "Algorithm": name,
@@ -247,12 +250,12 @@ def evaluateClusters(scaledDf, KMLabels, hierarchyLabels):
     return resultsDf
 
 def compareClusters(KMLabels, hierarchyLabels):
-    # Adj rand index is used to compare every pair of patients/participants and check if both algorithms put them together or pull apart
+    # Adj rand index [7] is used to compare every pair of patients/participants and check if both algorithms put them together or pull apart
     # 1 = both algorithms give the same cluster, 0 = chance but no better than that
     # it ignores label numbers when comparing so if cluster 0 in one is 1 in the other
     adjRand = adjusted_rand_score(KMLabels, hierarchyLabels)
 
-    # crosstab - shows k-means clusters as rows and hierarchy clusters as columns
+    # crosstab [16] - shows k-means clusters as rows and hierarchy clusters as columns
     # diagonal is where both algorithms agree and off diagonal is where they disagree
     # margins = True is used to add an All row and column that has totals
     crossTab = pd.crosstab(KMLabels, hierarchyLabels, rownames=["K-Means"], colnames=["Hierarchial"], margins=True)

@@ -5,6 +5,8 @@
     to help with this assignment. I checked any references and websites with carious methods independently to ensure I understood what was happening. Examples of code were provided by claude which I adapted and made my own by
     ensuring I fully understood everything. The final decisions made on analysis of dataset, code and final written report are my own choices and decisions to which I take full responsibility for accuracy of results and how the results have been perceived.
 
+    References found in README.md file
+
     This file is used to pre process the csv file.
     This means that this file willload the csv file. It will Check for missing values and decide what to do with them. It will also be used to validate the data from the csv, It will impute any cells which may be missing values in the columns of the csv file.
     It will transform the data and scale features which have been chosen to be scaled.
