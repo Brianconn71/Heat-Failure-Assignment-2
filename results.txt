@@ -1,0 +1,193 @@
+Shape of data before removing unused columns (299, 13)
+Warning: 348 empty values found in the dataset
+Shape of data after removing unused columns (299, 11)
+No duplicated values detected in the dataset
+No Non-Numeric columns detected in the dataset
+Binary columns: ['anaemia', 'diabetes', 'high_blood_pressure', 'sex', 'smoking']
+continuous columns: ['age', 'creatinine_phosphokinase', 'ejection_fraction', 'platelets', 'serum_creatinine', 'serum_sodium']
+No Negative Values found!
+Continuous column age filled with 60.0
+Binary column anaemia filled with 0.0
+Continuous column creatinine_phosphokinase filled with 250.0
+Binary column diabetes filled with 0.0
+Continuous column ejection_fraction filled with 38.0
+Binary column high_blood_pressure filled with 0.0
+Continuous column platelets filled with 261000.0
+Continuous column serum_creatinine filled with 1.1
+Continuous column serum_sodium filled with 137.0
+Binary column sex filled with 1.0
+Binary column smoking filled with 0.0
+No more empty values in Dataset
+Processed data file saved to /Users/brianconnolly/Desktop/DesktopOrganizer/Folder 1/Masters AI /Principals of Machine Learning/Assignment 2/data/processed_Heart_Failure.csv
+-------------------------------
+
+Skewness of continuous columns
+                          Skew Before  Skew After
+age                          0.466523   -0.037361
+creatinine_phosphokinase     4.929166    0.470871
+ejection_fraction            0.502795   -0.357238
+platelets                    1.689955   -1.325049
+serum_creatinine             5.196868    1.786317
+serum_sodium                -1.089666   -1.413486
+-------------------------------
+
+Z-Score of continuous columns before transforming
+age                         3.035721
+creatinine_phosphokinase    7.991393
+ejection_fraction           2.905295
+platelets                   6.344551
+serum_creatinine            8.626882
+serum_sodium                5.913657
+dtype: float64
+-------------------------------
+
+Z-Score of continuous columns AFTER transforming
+age                         3.035721
+creatinine_phosphokinase    3.115499
+ejection_fraction           2.905295
+platelets                   6.344551
+serum_creatinine            5.005227
+serum_sodium                5.913657
+dtype: float64
+-------------------------------
+
+Scaling the data
+-------------------------------
+
+Scaled Data
+          age  anaemia  creatinine_phosphokinase  diabetes  ejection_fraction  high_blood_pressure  platelets  serum_creatinine  serum_sodium  sex  smoking
+0    1.260272      0.0                  0.674869       0.0          -1.589004                  1.0   0.038100          1.137345     -1.683392  1.0      0.0
+1   -0.520267      0.0                  3.120722       0.0           0.030697                  0.0   0.020369         -0.187698     -0.186858  1.0      0.0
+2    0.370002      0.0                 -0.624410       0.0          -1.589004                  0.0  -1.074140          0.217308     -1.932814  1.0      0.0
+3   -0.965401      1.0                 -0.881920       0.0          -1.589004                  0.0  -0.555815         -0.187698      0.062564  1.0      0.0
+4    0.370002      1.0                 -0.538378       1.0          -1.589004                  0.0   0.707603          1.989275     -5.175304  0.0      0.0
+..        ...      ...                       ...       ...                ...                  ...        ...               ...           ...  ...      ...
+294  0.102922      0.0                 -1.444392       1.0           0.030697                  1.0  -0.005094         -0.187698      1.559098  1.0      1.0
+295 -0.520267      0.0                  1.746078       0.0           0.030697                  0.0   0.092092          0.023252      0.561409  0.0      0.0
+296 -1.410536      0.0                  1.862460       1.0           2.010331                  0.0   5.188956         -0.959759      0.311986  0.0      0.0
+297 -1.410536      0.0                 -0.119065       0.0           0.030697                  0.0  -1.311705          0.396976      0.810831  1.0      1.0
+298 -0.965401      0.0                 -0.347703       0.0           0.660580                  0.0   1.441897          0.720710     -0.186858  1.0      1.0
+
+[299 rows x 11 columns]
+-------------------------------
+
+Mean of Scaled Data
+age                         0.0
+creatinine_phosphokinase   -0.0
+ejection_fraction          -0.0
+platelets                  -0.0
+serum_creatinine            0.0
+serum_sodium                0.0
+dtype: float64
+-------------------------------
+
+Standard Deviation of Scaled Data
+age                         1.0
+creatinine_phosphokinase    1.0
+ejection_fraction           1.0
+platelets                   1.0
+serum_creatinine            1.0
+serum_sodium                1.0
+dtype: float64
+k=2: WCSS=1858.11, silhouette=0.155
+k=3: WCSS=1681.76, silhouette=0.112
+k=4: WCSS=1548.86, silhouette=0.111
+k=5: WCSS=1444.66, silhouette=0.111
+k=6: WCSS=1350.38, silhouette=0.120
+k=7: WCSS=1289.93, silhouette=0.106
+k=8: WCSS=1237.17, silhouette=0.114
+k=9: WCSS=1202.56, silhouette=0.104
+k=10: WCSS=1165.86, silhouette=0.103
+k=11: WCSS=1134.37, silhouette=0.098
+k=12: WCSS=1095.20, silhouette=0.101
+k=13: WCSS=1066.07, silhouette=0.101
+k=14: WCSS=1041.26, silhouette=0.102
+k=15: WCSS=1023.41, silhouette=0.096
+Best K value for Silhouettes: 2
+Best K value for WCSS: 2
+
+--------------K-Means Cluster Size-----------------
+
+0    215
+1     84
+Name: count, dtype: int64
+
+--------------K-Means Cluster Centers Scaled-----------------
+
+    age  anaemia  creatinine_phosphokinase  diabetes  ejection_fraction  high_blood_pressure  platelets  serum_creatinine  serum_sodium   sex  smoking
+0 -0.26     0.41                      0.02      0.36               0.19                 0.33       0.05             -0.37          0.32  0.64     0.27
+1  0.67     0.35                     -0.05      0.39              -0.49                 0.29      -0.13              0.94         -0.83  0.76     0.29
+
+--------------Hierarchial Cluster Size-----------------
+
+0    238
+1     61
+Name: count, dtype: int64
+
+PCA: PC1 20.22%, PC2: 15.88%, Total: 36.10%
+                           PC1   PC2
+age                       0.30 -0.51
+anaemia                   0.01 -0.14
+creatinine_phosphokinase -0.15  0.60
+diabetes                  0.01  0.02
+ejection_fraction        -0.39 -0.53
+high_blood_pressure      -0.04 -0.07
+platelets                -0.21 -0.15
+serum_creatinine          0.61 -0.16
+serum_sodium             -0.56 -0.17
+sex                       0.05  0.05
+smoking                   0.01  0.02
+
+--------------Cluster Evaluation-----------------
+
+                               Silhouette  Davies-Bouldin      WCSS
+Algorithm                                                          
+K-Means                             0.155           2.322  1858.112
+Hierarchial (by ward linkage)       0.127           2.444  1929.283
+Hierarchial    0   1  All
+K-Means                  
+0            201  14  215
+1             37  47   84
+All          238  61  299
+
+--------------Comparing K-Means with Hierarchial-----------------
+
+Adjusted Rand Index: 0.392
+Patients in same cluster in both algorithms 82.94 %
+Hierarchial    0   1  All
+K-Means                  
+0            201  14  215
+1             37  47   84
+All          238  61  299
+
+--------------K-Means Cluster Profiles -----------------
+
+Cluster                           0          1  All Patients
+age                           57.91      68.35         60.84
+anaemia                       41.40      34.52         39.46
+creatinine_phosphokinase     559.33     500.54        542.82
+diabetes                      36.28      39.29         37.12
+ejection_fraction             39.79      32.21         37.66
+high_blood_pressure           33.49      28.57         32.11
+platelets                 266140.40  249522.19     261471.74
+serum_creatinine               1.05       2.04          1.33
+serum_sodium                 138.04     133.44        136.75
+sex                           64.19      76.19         67.56
+smoking                       26.51      28.57         27.09
+Patients (n)                 215.00      84.00        299.00
+
+--------------Hierarchy Cluster Profiles -----------------
+
+Cluster                           0          1  All Patients
+age                           61.05      60.05         60.84
+anaemia                       41.60      31.15         39.46
+creatinine_phosphokinase     574.81     417.98        542.82
+diabetes                      38.24      32.79         37.12
+ejection_fraction             39.62      30.02         37.66
+high_blood_pressure           33.19      27.87         32.11
+platelets                 268844.13  232707.35     261471.74
+serum_creatinine               1.12       2.16          1.33
+serum_sodium                 137.77     132.75        136.75
+sex                           64.29      80.33         67.56
+smoking                       24.79      36.07         27.09
+Patients (n)                 238.00      61.00        299.00
